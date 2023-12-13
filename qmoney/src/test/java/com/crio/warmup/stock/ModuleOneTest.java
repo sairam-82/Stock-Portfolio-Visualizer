@@ -11,7 +11,7 @@ class ModuleOneTest {
   @Test
   void mainReadFile() throws Exception {
     //given
-    String filename = "assessments/trades.json";
+    String filename = "/home/crio-user/workspace/sairam-criodo-ME_QMONEY_V2/qmoney/src/test/resources/assessments/trades.json";
     List<String> expected = Arrays.asList(new String[]{"MSFT", "CSCO", "CTS"});
 
     //when
@@ -25,7 +25,7 @@ class ModuleOneTest {
   @Test
   void mainReadFileEdgecase() throws Exception {
     //given
-    String filename = "assessments/empty.json";
+    String filename = "/home/crio-user/workspace/sairam-criodo-ME_QMONEY_V2/qmoney/src/test/resources/assessments/empty.json";
     List<String> expected = Arrays.asList(new String[]{});
 
     //when
