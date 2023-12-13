@@ -21,7 +21,7 @@ class PortfolioManagerApplicationTest {
   @Test
   void mainReadFile() throws Exception {
     //given
-    String filename = "/home/crio-user/workspace/sairam-criodo-ME_QMONEY_V2/qmoney/src/main/resources/trades.json";
+    String filename = "trades.json";
     List<String> expected = Arrays.asList(new String[]{"AAPL", "MSFT", "GOOGL"});
 
     //when

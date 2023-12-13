@@ -53,7 +53,7 @@ public class PortfolioManagerApplication {
      if (args.length==0) return list;
     //  System.out.println(args[0]);
      File json= new File(args[0]);
-     PortfolioTrade[] objList= objMapper.readValue(json,PortfolioTrade[].class);
+     PortfolioTrade[] objList= objMapper.readValue(resolveFileFromResources(args[0]),PortfolioTrade[].class);
      List<String> listOfSymbols= new ArrayList<>();
      for(PortfolioTrade t:objList){
        listOfSymbols.add(t.getSymbol());
