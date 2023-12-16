@@ -3,10 +3,9 @@ package com.crio.warmup.stock.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDate;
-import java.util.Comparator;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TiingoCandle implements Candle{
+public class TiingoCandle implements Candle {
 
   private Double open;
   private Double close;
@@ -69,8 +68,4 @@ public class TiingoCandle implements Candle{
             + ", date=" + date
             + '}';
   }
-
-  
-
-  
 }

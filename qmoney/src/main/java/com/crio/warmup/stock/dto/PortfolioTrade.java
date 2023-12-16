@@ -24,7 +24,7 @@ public class PortfolioTrade {
     this.symbol = symbol;
     this.quantity = quantity;
     this.purchaseDate = purchaseDate;
-    this.tradeType = TradeType.BUY;
+    this.tradeType = tradeType.BUY;
   }
 
   public void setSymbol(String symbol) {
