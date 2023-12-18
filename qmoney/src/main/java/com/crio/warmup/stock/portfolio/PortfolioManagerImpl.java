@@ -66,16 +66,16 @@ public class PortfolioManagerImpl implements PortfolioManager {
 
   public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
       {
-     Candle[] listOfCandles= restTemplate.getForObject(buildUri(symbol, from, to),Candle[].class);
+     Candle[] listOfCandles= restTemplate.getForObject(buildUri(symbol, from, to),TiingoCandle[].class);
      return Arrays.asList(listOfCandles);
   }
 
   protected String buildUri(String symbol, LocalDate startDate, LocalDate endDate) {
     String STARTDATE= startDate.toString();
     String ENDDATE= endDate.toString();
+    String SYMBOL=symbol;
     String APIKEY=  "eb53fb80c7abfdf2b0482e9f8f072b9cbab71ce5";
-    String uriTemplate = "https:api.tiingo.com/tiingo/daily/$SYMBOL/prices?"
-            + "startDate=$STARTDATE&endDate=$ENDDATE&token=$APIKEY";
+    String uriTemplate = "https://api.tiingo.com/tiingo/daily/"+SYMBOL+"/prices?startDate="+STARTDATE+"&endDate="+ENDDATE+"&token="+APIKEY;
     System.out.println(uriTemplate);
       return uriTemplate;
   }
