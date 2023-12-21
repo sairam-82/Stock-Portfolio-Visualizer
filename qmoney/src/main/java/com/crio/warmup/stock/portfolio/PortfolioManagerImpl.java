@@ -73,10 +73,11 @@ public class PortfolioManagerImpl implements PortfolioManager {
   //  Remember to fill out the buildUri function and use that.
 
 
-  public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
+  public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to) throws JsonProcessingException
       {
-     Candle[] listOfCandles= restTemplate.getForObject(buildUri(symbol, from, to),TiingoCandle[].class);
-     return Arrays.asList(listOfCandles);
+        return stockQuotesService.getStockQuote(symbol, from, to);
+    //  Candle[] listOfCandles= restTemplate.getForObject(buildUri(symbol, from, to),TiingoCandle[].class);
+    //  return Arrays.asList(listOfCandles);
   }
 
   protected String buildUri(String symbol, LocalDate startDate, LocalDate endDate) {
@@ -99,6 +100,7 @@ public class PortfolioManagerImpl implements PortfolioManager {
       List<AnnualizedReturn> listOfAnnualizedReturns= new ArrayList<>();
 
       for(PortfolioTrade trade:portfolioTrades){
+        try{
           List<Candle> listOfQuotes= getStockQuote(trade.getSymbol(), trade.getPurchaseDate(), endDate);
           double buyPrice= listOfQuotes.get(0).getOpen();
           double sellPrice= listOfQuotes.get(listOfQuotes.size()-1).getClose();
@@ -106,7 +108,11 @@ public class PortfolioManagerImpl implements PortfolioManager {
           double total_num_years= ChronoUnit.DAYS.between(trade.getPurchaseDate(), endDate)/365.2462;
           double inverseOfYear= (1.00 / total_num_years );
           double annualized_returns = Math.pow((1.00 + totalReturns),inverseOfYear) - 1.00;
-          listOfAnnualizedReturns.add(new AnnualizedReturn(trade.getSymbol(), annualized_returns, totalReturns));
+          listOfAnnualizedReturns.add(new AnnualizedReturn(trade.getSymbol(), annualized_returns, totalReturns));}
+          catch(Exception e){
+            System.out.println(e.getMessage());
+            
+          }
       }
       listOfAnnualizedReturns.sort(getComparator());
       return listOfAnnualizedReturns;
