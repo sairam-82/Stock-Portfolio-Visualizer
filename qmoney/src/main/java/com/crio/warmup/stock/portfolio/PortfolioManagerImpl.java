@@ -8,6 +8,7 @@ import com.crio.warmup.stock.dto.AnnualizedReturn;
 import com.crio.warmup.stock.dto.Candle;
 import com.crio.warmup.stock.dto.PortfolioTrade;
 import com.crio.warmup.stock.dto.TiingoCandle;
+import com.crio.warmup.stock.exception.StockQuoteServiceException;
 import com.crio.warmup.stock.quotes.StockQuotesService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,10 +74,22 @@ public class PortfolioManagerImpl implements PortfolioManager {
   //  Remember to fill out the buildUri function and use that.
 
 
-  public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to) throws JsonProcessingException
+  public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to) throws JsonProcessingException,StockQuoteServiceException
       {
-        return stockQuotesService.getStockQuote(symbol, from, to);
-    //  Candle[] listOfCandles= restTemplate.getForObject(buildUri(symbol, from, to),TiingoCandle[].class);
+        List<Candle> list;
+      try {
+        
+        list=stockQuotesService.getStockQuote(symbol, from, to);
+        return list;
+      } catch (JsonProcessingException e) {
+        //TODO: handle exception
+        throw new StockQuoteServiceException(e.getMessage());
+      }
+      catch(StockQuoteServiceException e){
+        throw new StockQuoteServiceException(e.getMessage(),e);
+      }
+
+   //  Candle[] listOfCandles= restTemplate.getForObject(buildUri(symbol, from, to),TiingoCandle[].class);
     //  return Arrays.asList(listOfCandles);
   }
 

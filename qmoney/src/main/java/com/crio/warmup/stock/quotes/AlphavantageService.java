@@ -19,6 +19,17 @@ import java.util.stream.Collectors;
 // import org.springframework.asm.TypeReference;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.cglib.core.Local;
+
+import com.crio.warmup.stock.dto.AlphavantageDailyResponse;
+import com.crio.warmup.stock.dto.Candle;
+import com.crio.warmup.stock.exception.StockQuoteServiceException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.web.client.RestTemplate;
 
 public class AlphavantageService implements StockQuotesService {
@@ -31,14 +42,21 @@ public class AlphavantageService implements StockQuotesService {
   
   @Override
   public List<Candle> getStockQuote(String symbol, LocalDate from, LocalDate to)
-      throws JsonProcessingException {
+      throws JsonProcessingException,StockQuoteServiceException {
     // TODO Auto-generated method stub
-    
-    String alphavantageDailyResponseString= restTemplate.getForObject(buildUri(symbol),String.class);
+    Map<LocalDate,AlphavantageCandle> alphavantageMap;
+    try{
+      String alphavantageDailyResponseString= restTemplate.getForObject(buildUri(symbol),String.class);
     ObjectMapper objectMapper= new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
     AlphavantageDailyResponse alphavantageDailyResponse= objectMapper.readValue(alphavantageDailyResponseString, new TypeReference<AlphavantageDailyResponse>() {});
-    Map<LocalDate,AlphavantageCandle> alphavantageMap= alphavantageDailyResponse.getCandles();
+    alphavantageMap= alphavantageDailyResponse.getCandles();}
+    catch(JsonProcessingException e){
+      throw new StockQuoteServiceException(e.getMessage());
+    }
+    catch(Exception e){
+      throw new StockQuoteServiceException(e.getMessage());
+    }
     List<AlphavantageCandle> alphaCandlesList= new ArrayList<>();
     // for(LocalDate ld:alphavantageMap.keySet()){
 
@@ -107,6 +125,13 @@ public class AlphavantageService implements StockQuotesService {
   //  1. Write a method to create appropriate url to call Alphavantage service. The method should
   //     be using configurations provided in the {@link @application.properties}.
   //  2. Use this method in #getStockQuote.
+  // TODO: CRIO_TASK_MODULE_EXCEPTIONS
+  //   1. Update the method signature to match the signature change in the interface.
+  //   2. Start throwing new StockQuoteServiceException when you get some invalid response from
+  //      Alphavantage, or you encounter a runtime exception during Json parsing.
+  //   3. Make sure that the exception propagates all the way from PortfolioManager, so that the
+  //      external user's of our API are able to explicitly handle this exception upfront.
+  //CHECKSTYLE:OFF
 
 }
 
