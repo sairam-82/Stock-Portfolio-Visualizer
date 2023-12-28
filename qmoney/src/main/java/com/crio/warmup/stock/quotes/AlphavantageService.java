@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 // import org.springframework.asm.TypeReference;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.cglib.core.Local;
-
+import org.springframework.http.ResponseEntity;
 import com.crio.warmup.stock.dto.AlphavantageDailyResponse;
 import com.crio.warmup.stock.dto.Candle;
 import com.crio.warmup.stock.exception.StockQuoteServiceException;
@@ -47,6 +47,7 @@ public class AlphavantageService implements StockQuotesService {
     Map<LocalDate,AlphavantageCandle> alphavantageMap;
     try{
       String alphavantageDailyResponseString= restTemplate.getForObject(buildUri(symbol),String.class);
+      // System.out.println();
     ObjectMapper objectMapper= new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
     AlphavantageDailyResponse alphavantageDailyResponse= objectMapper.readValue(alphavantageDailyResponseString, new TypeReference<AlphavantageDailyResponse>() {});
@@ -54,6 +55,9 @@ public class AlphavantageService implements StockQuotesService {
     catch(JsonProcessingException e){
       throw new StockQuoteServiceException(e.getMessage(),e);
     }
+    // catch(StockQuoteServiceException e){
+    //   throw new StockQuoteServiceException(e.getMessage());
+    // }
     catch(Exception e){
       throw new StockQuoteServiceException(e.getMessage(),e);
     }
@@ -68,6 +72,7 @@ public class AlphavantageService implements StockQuotesService {
     // }
     // if (!alphavantageMap.containsKey(to)) to=alphavantageMap.get();
     LocalDate tempDate=LocalDate.parse(from.toString());
+    try{
     while(!tempDate.isEqual(to.plusDays(1))){
       if (alphavantageMap.containsKey(tempDate)){
        alphavantageMap.get(tempDate).setDate(tempDate);
@@ -76,6 +81,10 @@ public class AlphavantageService implements StockQuotesService {
       // else break;
       tempDate= tempDate.plusDays(1);
     }
+  }
+  catch(Exception e){
+  throw new StockQuoteServiceException(e.getMessage());
+  }
     List<Candle> candleList= new ArrayList<>();
     for(AlphavantageCandle aCandle:alphaCandlesList) candleList.add(aCandle);
     return candleList;
