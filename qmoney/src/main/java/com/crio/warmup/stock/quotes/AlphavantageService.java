@@ -52,10 +52,10 @@ public class AlphavantageService implements StockQuotesService {
     AlphavantageDailyResponse alphavantageDailyResponse= objectMapper.readValue(alphavantageDailyResponseString, new TypeReference<AlphavantageDailyResponse>() {});
     alphavantageMap= alphavantageDailyResponse.getCandles();}
     catch(JsonProcessingException e){
-      throw new StockQuoteServiceException(e.getMessage());
+      throw new StockQuoteServiceException(e.getMessage(),e);
     }
     catch(Exception e){
-      throw new StockQuoteServiceException(e.getMessage());
+      throw new StockQuoteServiceException(e.getMessage(),e);
     }
     List<AlphavantageCandle> alphaCandlesList= new ArrayList<>();
     // for(LocalDate ld:alphavantageMap.keySet()){
