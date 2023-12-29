@@ -19,11 +19,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.springframework.web.client.RestTemplate;
 
@@ -132,6 +134,32 @@ public class PortfolioManagerImpl implements PortfolioManager {
       
     // return null;
   }
+  @Override
+  public List<AnnualizedReturn> calculateAnnualizedReturnParallel(
+      List<PortfolioTrade> portfolioTrades, LocalDate endDate, int numThreads)
+      throws InterruptedException, StockQuoteServiceException {
+    // TODO Auto-generated method stub
+    ExecutorService executorService= Executors.newFixedThreadPool(numThreads);
+    List<Future<AnnualizedReturn>> futureAnnualizedReturns= new ArrayList<>();
+    List<CallableThread> callableThreads= new ArrayList<>();
+    List<AnnualizedReturn> listOfAnnualizedReturns=new ArrayList<>();
+    for(PortfolioTrade trade:portfolioTrades){
+       callableThreads.add(new CallableThread(trade.getSymbol(),trade.getPurchaseDate(),endDate));
+    }
+    try{
+         futureAnnualizedReturns= executorService.invokeAll(callableThreads);
+         for(Future<AnnualizedReturn> futureAnnualisedReturn: futureAnnualizedReturns){
+           listOfAnnualizedReturns.add(futureAnnualisedReturn.get());
+         }
+    }
+    catch(InterruptedException e){
+      throw new InterruptedException();
+    }
+    catch(Exception e){
+      throw new StockQuoteServiceException(e.getMessage(),e);
+    }
+    return listOfAnnualizedReturns.stream().sorted(Comparator.comparing(AnnualizedReturn::getAnnualizedReturn).reversed()).collect(Collectors.toList());
+  }
 
 
   // ¶TODO: CRIO_TASK_MODULE_ADDITIONAL_REFACTOR
@@ -140,4 +168,44 @@ public class PortfolioManagerImpl implements PortfolioManager {
   //  You also have a liberty to completely get rid of that function itself, however, make sure
   //  that you do not delete the #getStockQuote function.
 
+  class CallableThread implements Callable<AnnualizedReturn>{
+    
+    LocalDate tradePurchaseDate;
+    LocalDate tradeEndDate;
+    String tradeSymbol;
+    
+    public CallableThread(){
+      
+    }
+    
+    public CallableThread(String tradeSymbol,LocalDate tradePurchaseDate, LocalDate tradeEndDate) {
+      this.tradePurchaseDate = tradePurchaseDate;
+      this.tradeEndDate = tradeEndDate;
+      this.tradeSymbol = tradeSymbol;
+    }
+  
+  
+  
+    @Override
+    public AnnualizedReturn call() throws Exception {
+      // TODO Auto-generated method stub
+     try {
+     List<Candle> listOfQuotes= stockQuotesService.getStockQuote(tradeSymbol,tradePurchaseDate,tradeEndDate);
+     double buyPrice= listOfQuotes.get(0).getOpen();
+         double sellPrice= listOfQuotes.get(listOfQuotes.size()-1).getClose();
+         double totalReturns=(sellPrice-buyPrice)/buyPrice;
+         double total_num_years= ChronoUnit.DAYS.between(tradePurchaseDate, tradeEndDate)/365.2462;
+         double inverseOfYear= (1.00 / total_num_years );
+         double annualized_returns = Math.pow((1.00 + totalReturns),inverseOfYear) - 1.00;
+     return new AnnualizedReturn(tradeSymbol, annualized_returns, totalReturns) ;
+      
+     } catch (Exception e) {
+      //TODO: handle exception
+      throw new InterruptedException(e.getMessage());
+    }
+  
+  }
+  }
 }
+
+
